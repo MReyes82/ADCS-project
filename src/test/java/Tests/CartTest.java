@@ -1,115 +1,100 @@
 package Tests;
 
-import Pages.AuthPage;
-import Pages.CartPage;
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import Base.BaseTest;
+import Utils.TestData;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Pruebas del carrito para agregar y quitar productos.
+ * Pruebas de carrito alineadas con la matriz funcional.
  */
-public class CartTest {
-    WebDriver driver;
-    CartPage cartPage;
-    AuthPage authPage;
+public class CartTest extends BaseTest
+{
+    @Test(priority = 1) // P-CART-05P
+    public void pCart05PAddAllProductsWithStandardUser()
+    {
+        loginAs(TestData.STANDARD_USER);
+        cartPage.addProducts(TestData.ALL_PRODUCTS);
 
-
-    /**
-     * Configura el navegador y prepara las paginas necesarias.
-     */
-    @BeforeMethod
-    public void setUp(){
-        final Map<String, Object> chromePrefs = new HashMap<>();
-        chromePrefs.put("credentials_enable_service", false);
-        chromePrefs.put("profile.password_manager_enabled", false);
-        chromePrefs.put("profile.password_manager_leak_detection", false);
-        final ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.setExperimentalOption("prefs", chromePrefs);
-        WebDriverManager.chromedriver().setup();
-
-        driver = new ChromeDriver(chromeOptions);
-        driver.get("https://www.saucedemo.com");
-        authPage = new AuthPage(driver, 10);
-        cartPage = new CartPage(driver, 10);
+        Assert.assertEquals(cartPage.getCartBadgeCount(), TestData.ALL_PRODUCTS.size());
+        Assert.assertTrue(cartPage.areProductButtonsRemove(TestData.ALL_PRODUCTS));
     }
 
-    /**
-     * Valida que se pueda agregar un producto al carrito.
-     */
-    @Test // P-CART-01P
-    public void addItemToCart(){
-        loginAccess("standard_user");
-        cartPage.addToCart();
-        cartPage.waitForCart();
-        Assert.assertEquals(cartPage.getNumberBadgeCart(), "1");
-        Assert.assertTrue(cartPage.isElementDisplayed("removeBtn"));
+    @Test(priority = 2) // P-CART-05N
+    public void pCart05NAddAllProductsWithProblemUser()
+    {
+        loginAs(TestData.PROBLEM_USER);
+        cartPage.addProducts(TestData.ALL_PRODUCTS);
+
+        Assert.assertEquals(cartPage.getCartBadgeCount(), TestData.ALL_PRODUCTS.size());
+        Assert.assertTrue(cartPage.areProductButtonsRemove(TestData.ALL_PRODUCTS));
     }
 
-    /**
-     * Valida que se pueda remover un producto del carrito.
-     */
-    @Test // P-CART-02P
-    public void removeItemFromCart(){
-        loginAccess("standard_user");
-        cartPage.addToCart();
-        cartPage.waitForCart();
-        cartPage.removeFromCart();
-        cartPage.waitForBadge();
-        Assert.assertTrue(cartPage.isElementDisplayed("addToCartBtn"));
+    @Test(priority = 3) // P-CART-01P
+    public void pCart01PAddSpecificProduct()
+    {
+        loginAs(TestData.STANDARD_USER);
+        cartPage.addProduct(TestData.BACKPACK);
+
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 1);
+        Assert.assertTrue(cartPage.isProductButtonRemove(TestData.BACKPACK));
     }
 
-    /**
-     * Valida la eliminacion de un producto especifico en el carrito.
-     */
-    @Test // P-CART-04P
-    public void validateRemoveSpecificProductOnCart(){
-        loginAccess("error_user");
-        cartPage.addToCart();
-        cartPage.removeFromCart();
-        Assert.assertTrue(cartPage.isBadgeCartDisplayed(), "El badge del carrito sigue visible");
-        Assert.assertFalse(cartPage.isElementDisplayed("removeBtn"), "No cambió a Add to cart");
+    @Test(priority = 4) // P-CART-02P
+    public void pCart02PRemoveSpecificProductFromInventory()
+    {
+        loginAs(TestData.STANDARD_USER);
+        cartPage.addProduct(TestData.BACKPACK);
+        cartPage.removeProduct(TestData.BACKPACK);
 
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 0);
+        Assert.assertEquals(cartPage.getProductButtonText(TestData.BACKPACK), "Add to cart");
     }
 
-    /**
-     * Valida la eliminacion de un producto especifico desde la vista del carrito.
-     */
-    @Test // P-CART-06P
-    public void validateRemoveSpecificProductOnCartII(){
-        loginAccess("error_user");
-        cartPage.addToCart();
+    @Test(priority = 5) // P-CART-03P
+    public void pCart03PAddFourthProductWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        cartPage.addProducts(TestData.THREE_ERROR_USER_PRODUCTS);
+        cartPage.addProduct(TestData.BOLT_T_SHIRT);
+
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 4);
+        Assert.assertTrue(cartPage.isProductButtonRemove(TestData.BOLT_T_SHIRT));
+    }
+
+    @Test(priority = 6) // P-CART-04P
+    public void pCart04PRemoveSpecificProductFromInventoryWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        cartPage.addProduct(TestData.BACKPACK);
+        cartPage.removeProduct(TestData.BACKPACK);
+
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 0);
+        Assert.assertEquals(cartPage.getProductButtonText(TestData.BACKPACK), "Add to cart");
+    }
+
+    @Test(priority = 7) // P-CART-06P
+    public void pCart06PRemoveSpecificProductFromCartWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        cartPage.addProduct(TestData.BACKPACK);
         cartPage.goToCart();
-        cartPage.removeFromCart();
-        Assert.assertTrue(cartPage.isCardItemDisplayed(), "El item no se eliminó correctamente");
+        cartPage.removeProductFromCart(TestData.BACKPACK);
+
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 0);
+        Assert.assertTrue(cartPage.isCartEmpty());
+        Assert.assertFalse(cartPage.isProductInCart(TestData.BACKPACK));
     }
 
-    /**
-     * Cierra el navegador al finalizar cada prueba.
-     */
-    @AfterMethod
-    public void tearDown(){
-        if(driver != null)
-            driver.quit();
+    @Test(priority = 8) // P-CART-07P
+    public void pCart07PRemoveSpecificProductFromDetailWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        cartPage.addProduct(TestData.BACKPACK);
+        cartPage.openProductDetails(TestData.BACKPACK);
+        cartPage.removeProductFromDetail();
 
+        Assert.assertEquals(cartPage.getCartBadgeCount(), 0);
+        Assert.assertEquals(cartPage.getDetailButtonText(), "Add to cart");
     }
-
-    /**
-     * Inicia sesion con el usuario indicado.
-     * @param username usuario de login
-     */
-    public void loginAccess(String username){
-        authPage.enterUsername(username);
-        authPage.enterPassword("secret_sauce");
-        authPage.clickLoginButton();
-    }
-
 }

@@ -5,7 +5,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,10 +16,7 @@ import java.util.List;
  */
 public class InventoryPage extends BasePage
 {
-    private final By usernameField = By.id("user-name");
-    private final By passwordField = By.id("password");
-    private final By loginButton = By.xpath("//input[@class='submit-button btn_action']");
-    private final By filterDropdown = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select");
+    private final By filterDropdown = By.cssSelector(".product_sort_container");
     // Definir el locator para las opciones del dropdown
     private final By dropdownAtoZ = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[1]");
     private final By dropdownZtoA = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[2]");
@@ -24,6 +24,8 @@ public class InventoryPage extends BasePage
     private final By dropdownHtoL = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[4]");
     private final By inventoryList = By.xpath("//div[@class='inventory_list']");
     private final By inventoryListElement = By.cssSelector(".inventory_item");
+    private final By inventoryItemName = By.cssSelector(".inventory_item_name");
+    private final By inventoryItemPrice = By.cssSelector(".inventory_item_price");
 
     public InventoryPage(WebDriver driver, int seconds)
     {
@@ -74,6 +76,18 @@ public class InventoryPage extends BasePage
         }
     }
 
+    public void selectSortOption(String optionValue)
+    {
+        Select select = new Select(findElement(filterDropdown));
+        select.selectByValue(optionValue);
+    }
+
+    public String getSelectedSortOption()
+    {
+        Select select = new Select(findElement(filterDropdown));
+        return select.getFirstSelectedOption().getAttribute("value");
+    }
+
     /**
      * Espera a que la lista de inventario este visible.
      */
@@ -89,7 +103,28 @@ public class InventoryPage extends BasePage
      */
     public String getItemName(WebElement inventoryItem)
     {
-        return inventoryItem.findElement(By.cssSelector(".inventory_item_name ")).getText();
+        return inventoryItem.findElement(inventoryItemName).getText();
+    }
+
+    public List<String> getProductNames()
+    {
+        List<String> names = new ArrayList<>();
+        for (WebElement item : getInventoryItems())
+        {
+            names.add(item.findElement(inventoryItemName).getText());
+        }
+        return names;
+    }
+
+    public List<Double> getProductPrices()
+    {
+        List<Double> prices = new ArrayList<>();
+        for (WebElement item : getInventoryItems())
+        {
+            String price = item.findElement(inventoryItemPrice).getText().replace("$", "");
+            prices.add(Double.parseDouble(price));
+        }
+        return prices;
     }
     // Esperar
     /**
@@ -99,13 +134,24 @@ public class InventoryPage extends BasePage
     {
         wait.until(ExpectedConditions.alertIsPresent());
     }
+
+    public boolean isAlertPresent()
+    {
+        return waitForAlert(Duration.ofSeconds(2));
+    }
+
     // dismiss alert
     /**
      * Acepta y cierra el alert del navegador.
      */
     public void dismissAlert()
     {
-        driver.switchTo().alert().accept();
+        acceptAlert();
+    }
+
+    public String dismissAlertAndGetText()
+    {
+        return acceptAlert();
     }
 
     // Util para obtener un N elemento de la lista de Inventory Items
@@ -136,5 +182,10 @@ public class InventoryPage extends BasePage
         }
 
         return items.get(index);
+    }
+
+    private List<WebElement> getInventoryItems()
+    {
+        return findElement(inventoryList).findElements(inventoryListElement);
     }
 }

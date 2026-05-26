@@ -1,156 +1,217 @@
 package Tests;
 
-import Pages.AuthPage;
-import Pages.InventoryPage;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import Base.BaseTest;
+import Utils.TestData;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 /**
- * Pruebas de inventario para validar filtros y ordenamiento.
+ * Pruebas de filtros de inventario alineadas con la matriz funcional.
  */
-public class InventoryTest
+public class InventoryTest extends BaseTest
 {
-    WebDriver driver;
-    InventoryPage inventoryPage;
-    AuthPage authPage;
-
-    /**
-     * Configura el navegador y prepara las paginas necesarias.
-     */
-    @BeforeMethod
-    public void setUp()
+    @Test(priority = 1) // P-FILTER-01P
+    public void pFilter01PLowToHighWithStandardUser()
     {
-        driver = new ChromeDriver();
-        driver.get("https://www.saucedemo.com");
-        authPage = new AuthPage(driver, 10);
-        inventoryPage = new InventoryPage(driver, 10);
+        loginAs(TestData.STANDARD_USER);
+        inventoryPage.selectSortOption("lohi");
+
+        assertPricesAscending();
     }
 
-    /**
-     * Valida el filtro de menor a mayor con usuario estandar.
-     */
-    @Test
-    public void testFilterLtoH()
+    @Test(priority = 2) // P-FILTER-01N
+    public void pFilter01NLowToHighWithProblemUser()
     {
-        accessToInventory("standard_user");
-        inventoryPage.waitForFilterDropdown();
-        inventoryPage.clickDropdown();
-        inventoryPage.clickDropdownOption("LtoH");
-        inventoryPage.waitForInventory();
-        var firstElement = inventoryPage.getInventoryListElement(0);
-        if (firstElement == null)
-        {
-            System.err.println("[testFilterLtoHError] ERROR al obtener el primer elemento del inventario");
-            return;
-        }
-        var itemName = inventoryPage.getItemName(firstElement);
-        Assert.assertEquals(itemName, "Sauce Labs Onesie");
-    }
-    /**
-     * Valida el filtro de menor a mayor con usuario con problemas.
-     */
-    @Test
-    public void testFilterLtoHNegative()
-    {
-        accessToInventory("problem_user");
-        inventoryPage.waitForFilterDropdown();
-        inventoryPage.clickDropdown();
-        inventoryPage.clickDropdownOption("LtoH");
-        inventoryPage.waitForInventory();
-        var firstElement = inventoryPage.getInventoryListElement(0);
-        if (firstElement == null)
-        {
-            System.err.println("[testFilterLtoHNegativeError] ERROR al obtener el primer elemento del inventario");
-            return;
-        }
-        var itemName = inventoryPage.getItemName(firstElement);
-        Assert.assertNotEquals(itemName, "Sauce Labs Onesie"); // invertimos el assert para verificar que el nombre del primer elemento no es "Sauce Labs Onesie"
-    }
-    /**
-     * Valida el filtro de mayor a menor con usuario estandar.
-     */
-    @Test
-    public void testFilterHtoLPositive()
-    {
-        accessToInventory("standard_user");
-        inventoryPage.waitForFilterDropdown();
-        inventoryPage.clickDropdown();
-        inventoryPage.clickDropdownOption("HtoL");
-        inventoryPage.waitForInventory();
-        var firstElement = inventoryPage.getInventoryListElement(0);
-        if (firstElement == null)
-        {
-            System.err.println("[testFilterHtoLPositiveError] ERROR al obtener el primer elemento del inventario");
-            return;
-        }
-        var itemName = inventoryPage.getItemName(firstElement);
-        Assert.assertEquals(itemName, "Sauce Labs Fleece Jacket");
+        loginAs(TestData.PROBLEM_USER);
+        inventoryPage.selectSortOption("lohi");
+
+        assertPricesAscending();
     }
 
-    /**
-     * Valida el filtro de mayor a menor con usuario con problemas.
-     */
-    @Test
-    public void testFilterHtoLNegative()
+    @Test(priority = 3) // P-FILTER-02P
+    public void pFilter02PHighToLowWithStandardUser()
     {
-        accessToInventory("problem_user");
-        inventoryPage.waitForFilterDropdown();
-        inventoryPage.clickDropdown();
-        inventoryPage.clickDropdownOption("HtoL");
-        inventoryPage.waitForInventory();
-        var firstElement = inventoryPage.getInventoryListElement(0);
-        if (firstElement == null)
-        {
-            System.err.println("[testFilterHtoLNegativeError] ERROR al obtener el primer elemento del inventario");
-            return;
-        }
-        var itemName = inventoryPage.getItemName(firstElement);
-        Assert.assertNotEquals(itemName, "Sauce Labs Fleece Jacket");
+        loginAs(TestData.STANDARD_USER);
+        inventoryPage.selectSortOption("hilo");
+
+        assertPricesDescending();
     }
-    /**
-     * Valida el filtro de menor a mayor con usuario que dispara alert.
-     */
-    @Test
-    public void testFilterLtoHError()
+
+    @Test(priority = 4) // P-FILTER-02N
+    public void pFilter02NHighToLowWithProblemUser()
     {
-        accessToInventory("error_user");
-        inventoryPage.waitForFilterDropdown();
-        inventoryPage.clickDropdown();
-        inventoryPage.clickDropdownOption("LtoH");
-        inventoryPage.waitForAlert();
+        loginAs(TestData.PROBLEM_USER);
+        inventoryPage.selectSortOption("hilo");
+
+        assertPricesDescending();
+    }
+
+    @Test(priority = 5) // P-FILTER-03P
+    public void pFilter03PNameAtoZWithStandardUser()
+    {
+        loginAs(TestData.STANDARD_USER);
+        prepareDifferentNameOrder();
+        inventoryPage.selectSortOption("az");
+
+        assertNamesAscending();
+    }
+
+    @Test(priority = 6) // P-FILTER-03N
+    public void pFilter03NNameAtoZWithProblemUser()
+    {
+        loginAs(TestData.PROBLEM_USER);
+        prepareDifferentNameOrder();
+        inventoryPage.selectSortOption("az");
+
+        assertNamesAscending();
+    }
+
+    @Test(priority = 7) // P-FILTER-04P
+    public void pFilter04PNameZtoAWithStandardUser()
+    {
+        loginAs(TestData.STANDARD_USER);
+        inventoryPage.selectSortOption("za");
+
+        assertNamesDescending();
+    }
+
+    @Test(priority = 8) // P-FILTER-04N
+    public void pFilter04NNameZtoAWithProblemUser()
+    {
+        loginAs(TestData.PROBLEM_USER);
+        inventoryPage.selectSortOption("za");
+
+        assertNamesDescending();
+    }
+
+    @Test(priority = 9) // P-FILTER-05P
+    public void pFilter05PLowToHighWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("lohi");
+        dismissAlertIfPresent();
+
+        assertPricesAscending();
+    }
+
+    @Test(priority = 10) // P-FILTER-05N
+    public void pFilter05NLowToHighExceptionWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("lohi");
+
+        Assert.assertTrue(inventoryPage.isAlertPresent(), "El sistema debe mostrar un prompt de error controlado.");
         inventoryPage.dismissAlert();
-        var firstElement = inventoryPage.getInventoryListElement(0);
-        if (firstElement == null)
+        Assert.assertEquals(inventoryPage.getProductNames(), TestData.ALL_PRODUCTS);
+    }
+
+    @Test(priority = 11) // P-FILTER-06P
+    public void pFilter06PHighToLowWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("hilo");
+        dismissAlertIfPresent();
+
+        assertPricesDescending();
+    }
+
+    @Test(priority = 12) // P-FILTER-06N
+    public void pFilter06NHighToLowExceptionWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("hilo");
+
+        Assert.assertTrue(inventoryPage.isAlertPresent(), "El sistema debe mostrar un prompt de error controlado.");
+        inventoryPage.dismissAlert();
+        Assert.assertEquals(inventoryPage.getProductNames(), TestData.ALL_PRODUCTS);
+    }
+
+    @Test(priority = 13) // P-FILTER-07P
+    public void pFilter07PNameAtoZWithErrorUserBlocked()
+    {
+        throw new SkipException("Caso bloqueado: no es posible colocar el listado en un orden distinto por falla previa de ordenamiento con error_user.");
+    }
+
+    @Test(priority = 14) // P-FILTER-07N
+    public void pFilter07NNameAtoZExceptionWithErrorUserBlocked()
+    {
+        throw new SkipException("Caso bloqueado: no es posible cumplir la precondicion de orden distinto para validar Name A to Z con error_user.");
+    }
+
+    @Test(priority = 15) // P-FILTER-08P
+    public void pFilter08PNameZtoAWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("za");
+        dismissAlertIfPresent();
+
+        assertNamesDescending();
+    }
+
+    @Test(priority = 16) // P-FILTER-08N
+    public void pFilter08NNameZtoAExceptionWithErrorUser()
+    {
+        loginAs(TestData.ERROR_USER);
+        inventoryPage.selectSortOption("za");
+
+        Assert.assertTrue(inventoryPage.isAlertPresent(), "El sistema debe mostrar un prompt de error controlado.");
+        inventoryPage.dismissAlert();
+        Assert.assertEquals(inventoryPage.getProductNames(), TestData.ALL_PRODUCTS);
+    }
+
+    private void prepareDifferentNameOrder()
+    {
+        inventoryPage.selectSortOption("za");
+        Assert.assertTrue(isNamesDescending(), "No fue posible preparar el listado en Name Z to A para comprobar el cambio posterior a Name A to Z.");
+    }
+
+    private void assertPricesAscending()
+    {
+        List<Double> prices = inventoryPage.getProductPrices();
+        List<Double> expected = new ArrayList<>(prices);
+        expected.sort(Comparator.naturalOrder());
+        Assert.assertEquals(prices, expected, "Los productos deben ordenarse por precio de menor a mayor.");
+    }
+
+    private void assertPricesDescending()
+    {
+        List<Double> prices = inventoryPage.getProductPrices();
+        List<Double> expected = new ArrayList<>(prices);
+        expected.sort(Comparator.reverseOrder());
+        Assert.assertEquals(prices, expected, "Los productos deben ordenarse por precio de mayor a menor.");
+    }
+
+    private void assertNamesAscending()
+    {
+        List<String> names = inventoryPage.getProductNames();
+        List<String> expected = new ArrayList<>(names);
+        expected.sort(Comparator.naturalOrder());
+        Assert.assertEquals(names, expected, "Los productos deben ordenarse alfabeticamente de A a Z.");
+    }
+
+    private void assertNamesDescending()
+    {
+        Assert.assertTrue(isNamesDescending(), "Los productos deben ordenarse alfabeticamente de Z a A.");
+    }
+
+    private boolean isNamesDescending()
+    {
+        List<String> names = inventoryPage.getProductNames();
+        List<String> expected = new ArrayList<>(names);
+        expected.sort(Comparator.reverseOrder());
+        return names.equals(expected);
+    }
+
+    private void dismissAlertIfPresent()
+    {
+        if (inventoryPage.isAlertPresent())
         {
-            System.err.println("[testFilterLtoHError] ERROR al obtener el primer elemento del inventario");
-            return;
+            inventoryPage.dismissAlert();
         }
-        var itemName = inventoryPage.getItemName(firstElement);
-        Assert.assertEquals(itemName, "Sauce Labs Backpack");
-    }
-
-    /**
-     * Cierra el navegador al finalizar cada prueba.
-     */
-    @AfterMethod
-    public void tearDown()
-    {
-        driver.quit();
-    }
-
-    /**
-     * Accede al inventario con el usuario indicado.
-     * @param username usuario de login
-     */
-    public void accessToInventory(String username)
-    {
-        authPage.enterUsername(username);
-        authPage.enterPassword("secret_sauce");
-        authPage.clickLoginButton();
-        authPage.waitForRedirection();
     }
 }

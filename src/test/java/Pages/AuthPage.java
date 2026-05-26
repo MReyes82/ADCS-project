@@ -38,6 +38,13 @@ public class AuthPage extends BasePage
         type(passwordField, password);
     }
 
+    public void login(String username, String password)
+    {
+        enterUsername(username);
+        enterPassword(password);
+        clickLoginButton();
+    }
+
     /**
      * Hace clic en el botón de inicio de sesión.
      */
@@ -86,5 +93,10 @@ public class AuthPage extends BasePage
     public boolean isH3ErrorDisplayed()
     {
         return isDisplayed(errorH3);
+    }
+
+    public String getErrorMessage()
+    {
+        return getText(errorH3);
     }
 }

@@ -1,80 +1,41 @@
 package Tests;
 
-import Pages.AuthPage;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import Base.BaseTest;
+import Utils.TestData;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
- * Pruebas de autenticacion para el flujo de login.
+ * Pruebas de autenticacion alineadas con la matriz funcional.
  */
-public class AuthTest
+public class AuthTest extends BaseTest
 {
-    private WebDriver driver;
-    private AuthPage authPage;
-
-    /**
-     * Configura el navegador y navega a la pagina de login.
-     */
-    @BeforeMethod
-    public void setUp()
-    {
-        driver = new ChromeDriver();
-        driver.get("https://www.saucedemo.com");
-        authPage = new AuthPage(driver, 10);
-    }
-
-    /**
-     * Valida el login con credenciales validas.
-     */
     @Test(priority = 1) // P-AUTH-01P
-    public void testLoginPositive()
+    public void pAuth01PLoginWithValidCredentials()
     {
-        authPage.enterUsername("standard_user");
-        authPage.enterPassword("secret_sauce");
-        authPage.clickLoginButton();
+        authPage.login(TestData.STANDARD_USER, TestData.PASSWORD);
         authPage.waitForRedirection();
-        Assert.assertEquals(authPage.getUrlUtil(), "https://www.saucedemo.com/inventory.html");
+
+        Assert.assertEquals(driver.getCurrentUrl(), TestData.INVENTORY_URL);
     }
 
-    /**
-     * Valida el login con credenciales invalidas.
-     */
-    @Test(priority = 2) //P-AUTH-01N
-
-    public void testLoginNegative()
+    @Test(priority = 2) // P-AUTH-01N
+    public void pAuth01NLoginWithWrongPassword()
     {
-        authPage.enterUsername("user");
-        authPage.enterPassword("password");
-        authPage.clickLoginButton();
-        authPage.waitForErrorButton();
-        // Assert para verificar que el login fallo y sigue en la misma url
-        Assert.assertEquals(authPage.getUrlUtil(), "https://www.saucedemo.com/");
-    }
-
-    /**
-     * Valida el comportamiento con un usuario bloqueado.
-     */
-    @Test(priority = 3) //P-AUTH-02N
-    public void testLockedUser()
-    {
-        authPage.enterUsername("locked_out_user");
-        authPage.enterPassword("secret_sauce");
-        authPage.clickLoginButton();
+        authPage.login(TestData.STANDARD_USER, TestData.WRONG_PASSWORD);
         authPage.waitForErrorH3();
+
+        Assert.assertEquals(driver.getCurrentUrl(), TestData.BASE_URL);
         Assert.assertTrue(authPage.isH3ErrorDisplayed());
     }
 
-    /**
-     * Cierra el navegador al finalizar cada prueba.
-     */
-    @AfterMethod
-    public void tearDown()
+    @Test(priority = 3) // P-AUTH-02N
+    public void pAuth02NLoginWithLockedUser()
     {
-        if (driver != null)
-            driver.quit();
+        authPage.login(TestData.LOCKED_OUT_USER, TestData.PASSWORD);
+        authPage.waitForErrorH3();
+
+        Assert.assertEquals(driver.getCurrentUrl(), TestData.BASE_URL);
+        Assert.assertTrue(authPage.isH3ErrorDisplayed());
     }
 }

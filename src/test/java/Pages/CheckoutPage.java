@@ -37,9 +37,24 @@ public class CheckoutPage extends BasePage {
      * @param postalCode codigo postal
      */
     public void fillCheckoutInfo(String firstName, String lastName, String postalCode) {
-        type(firstNameField, firstName);
-        type(lastNameField, lastName);
-        type(postalCodeField, postalCode);
+        enterFirstName(firstName);
+        enterLastName(lastName);
+        enterPostalCode(postalCode);
+    }
+
+    public void enterFirstName(String firstName)
+    {
+        clearAndType(firstNameField, firstName);
+    }
+
+    public void enterLastName(String lastName)
+    {
+        clearAndType(lastNameField, lastName);
+    }
+
+    public void enterPostalCode(String postalCode)
+    {
+        clearAndType(postalCodeField, postalCode);
     }
 
     /**
@@ -81,6 +96,36 @@ public class CheckoutPage extends BasePage {
             case "errorMessage" -> errorMessage;
             default -> throw new IllegalArgumentException("Unknown element: " + elementName);
         };
-        return driver.findElement(element).isDisplayed();
+        return isDisplayed(element);
+    }
+
+    public boolean isErrorMessageDisplayed()
+    {
+        return isDisplayed(errorMessage);
+    }
+
+    public String getErrorMessage()
+    {
+        return getText(errorMessage);
+    }
+
+    public String getFirstNameValue()
+    {
+        return getAttribute(firstNameField, "value");
+    }
+
+    public String getLastNameValue()
+    {
+        return getAttribute(lastNameField, "value");
+    }
+
+    public String getPostalCodeValue()
+    {
+        return getAttribute(postalCodeField, "value");
+    }
+
+    public String getCurrentUrl()
+    {
+        return driver.getCurrentUrl();
     }
 }
