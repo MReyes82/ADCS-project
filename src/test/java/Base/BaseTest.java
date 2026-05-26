@@ -16,6 +16,9 @@ import org.testng.annotations.BeforeMethod;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Base comun para los tests de matriz: crea el navegador, instancia pages y concentra flujos repetidos.
+ */
 public abstract class BaseTest
 {
     protected WebDriver driver;
@@ -38,6 +41,9 @@ public abstract class BaseTest
         checkoutPage = new CheckoutPage(driver, 10);
     }
 
+    /**
+     * Cierra el navegador despues de cada caso para aislar estado entre usuarios.
+     */
     @AfterMethod(alwaysRun = true)
     public void tearDown()
     {
@@ -47,6 +53,9 @@ public abstract class BaseTest
         }
     }
 
+    /**
+     * Login reusable para pruebas que empiezan en inventario.
+     */
     protected void loginAs(String username)
     {
         authPage.login(username, TestData.PASSWORD);
@@ -54,6 +63,9 @@ public abstract class BaseTest
         inventoryPage.waitForInventory();
     }
 
+    /**
+     * Prepara el flujo comun de checkout con un producto en carrito.
+     */
     protected void startCheckoutWithBackpack(String username)
     {
         loginAs(username);

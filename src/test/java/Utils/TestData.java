@@ -2,6 +2,9 @@ package Utils;
 
 import java.util.List;
 
+/**
+ * Datos compartidos por la suite para mantener los IDs de matriz libres de literales duplicados.
+ */
 public final class TestData
 {
     public static final String BASE_URL = "https://www.saucedemo.com/";

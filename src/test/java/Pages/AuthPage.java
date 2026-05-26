@@ -12,7 +12,6 @@ public class AuthPage extends BasePage
     private final By usernameField = By.id("user-name");
     private final By passwordField = By.id("password");
     private final By loginButton = By.xpath("//input[@class='submit-button btn_action']");
-    private final By errorButton = By.xpath("//button[@class='error-button']");
     private final By errorH3 = By.xpath("//*[@id=\"login_button_container\"]/div/form/div[3]/h3");
 
     public AuthPage(WebDriver driver, int seconds)
@@ -28,7 +27,6 @@ public class AuthPage extends BasePage
     {
         type(usernameField, username);
     }
-    // Casi siempre es "secret_sauce" pero hay un TC donde se debe introducir algo diferente
     /**
      * Ingresa la contraseña en el campo de texto.
      * @param password La contraseña a ingresar
@@ -62,28 +60,11 @@ public class AuthPage extends BasePage
     }
 
     /**
-     * Espera a que el botón de error sea visible.
-     */
-    public void waitForErrorButton()
-    {
-        waitForElementVisibility(errorButton);
-    }
-
-    /**
      * Espera a que el encabezado H3 de error sea visible.
      */
     public void waitForErrorH3()
     {
         waitForElementVisibility(errorH3);
-    }
-
-    /**
-     * Obtiene la URL actual para validaciones de navegacion.
-     * @return URL actual del navegador
-     */
-    public String getUrlUtil()
-    {
-        return driver.getCurrentUrl();
     }
 
     /**
@@ -93,10 +74,5 @@ public class AuthPage extends BasePage
     public boolean isH3ErrorDisplayed()
     {
         return isDisplayed(errorH3);
-    }
-
-    public String getErrorMessage()
-    {
-        return getText(errorH3);
     }
 }

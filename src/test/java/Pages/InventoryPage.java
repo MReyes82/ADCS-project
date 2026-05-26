@@ -4,7 +4,6 @@ import Base.BasePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.time.Duration;
@@ -17,11 +16,6 @@ import java.util.List;
 public class InventoryPage extends BasePage
 {
     private final By filterDropdown = By.cssSelector(".product_sort_container");
-    // Definir el locator para las opciones del dropdown
-    private final By dropdownAtoZ = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[1]");
-    private final By dropdownZtoA = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[2]");
-    private final By dropdownLtoH = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[3]");
-    private final By dropdownHtoL = By.xpath("//*[@id=\"header_container\"]/div[2]/div/span/select/option[4]");
     private final By inventoryList = By.xpath("//div[@class='inventory_list']");
     private final By inventoryListElement = By.cssSelector(".inventory_item");
     private final By inventoryItemName = By.cssSelector(".inventory_item_name");
@@ -33,59 +27,12 @@ public class InventoryPage extends BasePage
     }
 
     /**
-     * Espera a que el dropdown de filtros sea visible.
+     * Selecciona el ordenamiento usando los valores nativos del select de SauceDemo.
      */
-    public void waitForFilterDropdown()
-    {
-        waitForElementVisibility(filterDropdown);
-    }
-
-    /**
-     * Abre el dropdown de filtros.
-     */
-    public void clickDropdown()
-    {
-        click(filterDropdown);
-    }
-    /**
-     * Selecciona una opcion del dropdown segun su clave.
-     * @param option clave de la opcion (AtoZ, ZtoA, LtoH, HtoL)
-     */
-    public void clickDropdownOption(String option)
-    {
-        switch(option)
-        {
-            case "AtoZ":
-                click(dropdownAtoZ);
-                break;
-
-            case "ZtoA":
-                click(dropdownZtoA);
-                break;
-
-            case "LtoH":
-                click(dropdownLtoH);
-                break;
-
-            case "HtoL":
-                click(dropdownHtoL);
-                break;
-            default:
-                System.err.println("[InventoryPage]: Opcion de dropdown no valida" + option);
-                break;
-        }
-    }
-
     public void selectSortOption(String optionValue)
     {
         Select select = new Select(findElement(filterDropdown));
         select.selectByValue(optionValue);
-    }
-
-    public String getSelectedSortOption()
-    {
-        Select select = new Select(findElement(filterDropdown));
-        return select.getFirstSelectedOption().getAttribute("value");
     }
 
     /**
@@ -97,15 +44,8 @@ public class InventoryPage extends BasePage
     }
 
     /**
-     * Obtiene el nombre del item de inventario.
-     * @param inventoryItem elemento del inventario
-     * @return nombre del item
+     * Devuelve los nombres en el mismo orden en que se muestran en inventario.
      */
-    public String getItemName(WebElement inventoryItem)
-    {
-        return inventoryItem.findElement(inventoryItemName).getText();
-    }
-
     public List<String> getProductNames()
     {
         List<String> names = new ArrayList<>();
@@ -116,6 +56,9 @@ public class InventoryPage extends BasePage
         return names;
     }
 
+    /**
+     * Convierte los precios visibles a numeros para validar ordenamientos.
+     */
     public List<Double> getProductPrices()
     {
         List<Double> prices = new ArrayList<>();
@@ -126,62 +69,18 @@ public class InventoryPage extends BasePage
         }
         return prices;
     }
-    // Esperar
-    /**
-     * Espera un alert del navegador.
-     */
-    public void waitForAlert()
-    {
-        wait.until(ExpectedConditions.alertIsPresent());
-    }
 
     public boolean isAlertPresent()
     {
         return waitForAlert(Duration.ofSeconds(2));
     }
 
-    // dismiss alert
     /**
      * Acepta y cierra el alert del navegador.
      */
     public void dismissAlert()
     {
         acceptAlert();
-    }
-
-    public String dismissAlertAndGetText()
-    {
-        return acceptAlert();
-    }
-
-    // Util para obtener un N elemento de la lista de Inventory Items
-    /**
-     * Obtiene el elemento de inventario por indice.
-     * @param index posicion del item
-     * @return item encontrado o null si hay error
-     */
-    public WebElement getInventoryListElement(int index)
-    {
-        if (index < 0)
-        {
-            System.err.println("[getInventoryListElement] ERROR: index no puede ser negativo");
-            return null;
-        }
-
-        List<WebElement> items = findElement(inventoryList).findElements(inventoryListElement);
-        if (items.isEmpty()) // guardrail
-        {
-            System.err.println("[getInventoryListElement] ERROR al obtener elementos del dropdown");
-            return null;
-        }
-
-        if (index >= items.size())
-        {
-            System.err.println("[getInventoryListElement] ERROR: index fuera de rango. Max index: " + (items.size() - 1));
-            return null;
-        }
-
-        return items.get(index);
     }
 
     private List<WebElement> getInventoryItems()

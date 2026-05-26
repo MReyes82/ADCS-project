@@ -3,7 +3,6 @@ package Pages;
 import Base.BasePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -12,11 +11,8 @@ import java.util.List;
  */
 public class CartPage extends BasePage {
 
-    private final By addToCartBtn = By.id("add-to-cart-sauce-labs-backpack");
-    private final By removeCartBtn = By.id("remove-sauce-labs-backpack");
     private final By goToCartLink = By.xpath("//a[@class='shopping_cart_link']");
     private final By badgeCart = By.xpath("//span[@class='shopping_cart_badge']");
-    private final By cardItem = By.xpath("//div[@class='cart_item_label']");
     private final By cartItem = By.cssSelector(".cart_item");
     private final By detailButton = By.cssSelector(".inventory_details_desc_container button");
 
@@ -26,17 +22,16 @@ public class CartPage extends BasePage {
     }
 
     /**
-     * Agrega el producto configurado al carrito.
+     * Agrega un producto localizando su tarjeta por nombre visible.
      */
-    public void addToCart(){
-        click(addToCartBtn);
-    }
-
     public void addProduct(String productName)
     {
         click(productButton(productName));
     }
 
+    /**
+     * Agrega varios productos para cubrir los casos de carrito completo.
+     */
     public void addProducts(List<String> productNames)
     {
         for (String productName : productNames)
@@ -46,23 +41,8 @@ public class CartPage extends BasePage {
     }
 
     /**
-     * Espera a que el carrito refleje el producto agregado.
+     * SauceDemo oculta el badge cuando el carrito queda vacio; se normaliza a 0.
      */
-    public void waitForCart(){
-        wait.until(ExpectedConditions.and(
-                ExpectedConditions.textToBePresentInElementLocated(badgeCart, "1"),
-                ExpectedConditions.visibilityOfElementLocated(removeCartBtn)));
-
-    }
-
-    /**
-     * Obtiene el numero mostrado en el badge del carrito.
-     * @return texto del badge
-     */
-    public String getNumberBadgeCart(){
-        return driver.findElement(badgeCart).getText();
-    }
-
     public int getCartBadgeCount()
     {
         if (!isPresent(badgeCart))
@@ -73,25 +53,16 @@ public class CartPage extends BasePage {
     }
 
     /**
-     * Verifica si un elemento del carrito esta visible segun su nombre clave.
-     * @param elementName nombre logico del elemento
-     * @return true si el elemento es visible
+     * Obtiene el texto actual del boton asociado a un producto.
      */
-    public boolean isElementDisplayed(String elementName){
-        By element = switch(elementName) {
-            case "removeBtn" -> removeCartBtn;
-            case "addToCartBtn" -> addToCartBtn;
-            case "cardItem" -> cardItem;
-            default -> throw new IllegalArgumentException("Unknown element: " + elementName);
-        };
-        return driver.findElement(element).isDisplayed();
-    }
-
     public String getProductButtonText(String productName)
     {
         return getText(productButton(productName));
     }
 
+    /**
+     * Valida que el producto agregado haya cambiado su boton a Remove.
+     */
     public boolean isProductButtonRemove(String productName)
     {
         return "Remove".equals(getProductButtonText(productName));
@@ -110,17 +81,16 @@ public class CartPage extends BasePage {
     }
 
     /**
-     * Quita el producto del carrito.
+     * Remueve un producto desde la pagina de inventario.
      */
-    public void removeFromCart(){
-        click(removeCartBtn);
-    }
-
     public void removeProduct(String productName)
     {
         click(productButton(productName));
     }
 
+    /**
+     * Remueve un producto desde la vista del carrito.
+     */
     public void removeProductFromCart(String productName)
     {
         click(cartProductButton(productName));
@@ -133,44 +103,30 @@ public class CartPage extends BasePage {
         click(goToCartLink);
     }
 
-    /**
-     * Espera a que desaparezca el badge del carrito.
-     */
-    public void waitForBadge(){
-        waitForElementInvisibility(badgeCart);
-    }
-
-    /**
-     * Indica si el badge del carrito no esta presente.
-     * @return true si no hay badge en el DOM
-     */
-    public boolean isBadgeCartDisplayed(){
-        return driver.findElements(badgeCart).isEmpty();
-    }
-
-    /**
-     * Indica si el item del carrito no esta presente.
-     * @return true si no hay item en el DOM
-     */
-    public boolean isCardItemDisplayed(){
-        return driver.findElements(cardItem).isEmpty();
-    }
-
     public boolean isCartEmpty()
     {
         return findElements(cartItem).isEmpty();
     }
 
+    /**
+     * Confirma si un producto sigue listado en el carrito.
+     */
     public boolean isProductInCart(String productName)
     {
         return isPresent(cartProductName(productName));
     }
 
+    /**
+     * Abre el detalle de producto para validar acciones desde esa pantalla.
+     */
     public void openProductDetails(String productName)
     {
         click(productNameLink(productName));
     }
 
+    /**
+     * Remueve el producto desde su pantalla de detalle.
+     */
     public void removeProductFromDetail()
     {
         click(detailButton);

@@ -19,7 +19,7 @@ public class CheckoutTest extends BaseTest
         checkoutPage.clickFinish();
         checkoutPage.waitForOrderConfirmation();
 
-        Assert.assertTrue(checkoutPage.isElementDisplayed("orderConfirmation"));
+        Assert.assertTrue(checkoutPage.isOrderConfirmationDisplayed());
     }
 
     @Test(priority = 2) // P-CHOUT-02N

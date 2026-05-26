@@ -42,16 +42,25 @@ public class CheckoutPage extends BasePage {
         enterPostalCode(postalCode);
     }
 
+    /**
+     * Captura solo el nombre para poder validar campos de forma independiente.
+     */
     public void enterFirstName(String firstName)
     {
         clearAndType(firstNameField, firstName);
     }
 
+    /**
+     * Captura solo el apellido; los defectos de problem_user/error_user se evidencian aqui.
+     */
     public void enterLastName(String lastName)
     {
         clearAndType(lastNameField, lastName);
     }
 
+    /**
+     * Captura el codigo postal del formulario de checkout.
+     */
     public void enterPostalCode(String postalCode)
     {
         clearAndType(postalCodeField, postalCode);
@@ -79,34 +88,19 @@ public class CheckoutPage extends BasePage {
     }
 
     /**
-     * Espera la visibilidad del mensaje de error.
+     * Confirma la finalizacion de compra sin usar un selector generico por nombre.
      */
-    public void waitForErrorMessage() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage));
+    public boolean isOrderConfirmationDisplayed()
+    {
+        return isDisplayed(orderConfirmation);
     }
 
     /**
-     * Verifica si un elemento clave del checkout esta visible.
-     * @param elementName nombre logico del elemento
-     * @return true si el elemento es visible
+     * Devuelve false si el error no existe, evitando NoSuchElementException en casos negativos.
      */
-    public boolean isElementDisplayed(String elementName) {
-        By element = switch(elementName) {
-            case "orderConfirmation" -> orderConfirmation;
-            case "errorMessage" -> errorMessage;
-            default -> throw new IllegalArgumentException("Unknown element: " + elementName);
-        };
-        return isDisplayed(element);
-    }
-
     public boolean isErrorMessageDisplayed()
     {
         return isDisplayed(errorMessage);
-    }
-
-    public String getErrorMessage()
-    {
-        return getText(errorMessage);
     }
 
     public String getFirstNameValue()

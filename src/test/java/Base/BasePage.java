@@ -10,6 +10,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.List;
 
+/**
+ * Capa base de Page Object con esperas explicitas y utilidades comunes de Selenium.
+ */
 public abstract class BasePage
 {
     protected WebDriver driver;
@@ -67,10 +70,6 @@ public abstract class BasePage
         wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
-    protected void waitForElementInvisibility(By locator)
-    {
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
-    }
     // Revisa si el WebElement esta visible
     protected boolean isDisplayed(By locator)
     {
